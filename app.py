@@ -38,32 +38,32 @@ ROUTE_STATIONS = [
     {
         "range": "01–04",
         "title": "Contexto y lenguaje",
-        "summary": "Del mundo real a los bits.",
-        "cue": "Una señal binaria nos permite representar estados y decisiones.",
+        "summary": "Proposiciones, V/F y señales 1/0.",
+        "concept": "Verdadero corresponde a 1 y Falso a 0; los operadores lógicos se implementan con compuertas.",
     },
     {
         "range": "05–08",
         "title": "Compuertas",
         "summary": "Cada compuerta tiene una regla.",
-        "cue": "Las entradas cambian; la regla de la compuerta determina la salida.",
+        "concept": "La regla de la compuerta determina la salida para cada combinación de entradas.",
     },
     {
         "range": "09",
         "title": "Leyes booleanas",
-        "summary": "Cambiar la forma, no la función.",
-        "cue": "Las equivalencias simplifican una expresión sin alterar sus resultados.",
+        "summary": "Equivalencias sin cambiar la función.",
+        "concept": "Las equivalencias simplifican expresiones sin cambiar sus resultados.",
     },
     {
         "range": "10–13",
         "title": "Ejercicios",
         "summary": "De la expresión al circuito.",
-        "cue": "La tabla comprueba la función y el circuito muestra cómo realizarla.",
+        "concept": "La tabla verifica la función y el circuito muestra su implementación.",
     },
     {
         "range": "14–15",
         "title": "Fuentes y cierre",
-        "summary": "Revisar, verificar y concluir.",
-        "cue": "Consultamos el material original y conectamos las tres representaciones.",
+        "summary": "Fuentes y síntesis.",
+        "concept": "Las fuentes respaldan la notación y las representaciones completan el análisis.",
     },
 ]
 
@@ -141,7 +141,7 @@ st.markdown(
       border-radius:16px; background:linear-gradient(145deg,rgba(16,34,47,.82),rgba(12,27,39,.72));
       min-height:195px; line-height:1.65; }
     .route-card strong { color:#71e4c4; }
-    .talk-track { padding:1rem 1.15rem; border-left:3px solid #5be3c2; border-radius:0 12px 12px 0;
+    .concept-panel { padding:1rem 1.15rem; border-left:3px solid #5be3c2; border-radius:0 12px 12px 0;
       background:rgba(58,116,112,.12); color:#c6d6dc; line-height:1.75; }
     .law-card { padding:.95rem 1rem; border:1px solid rgba(133,177,192,.16);
       border-radius:14px; background:rgba(16,34,47,.64); min-height:140px; }
@@ -318,16 +318,22 @@ def circuit_panel(
 
 
 def show_truth_table(
-    rows: list[dict[str, int]], selected_inputs: dict[str, int] | None = None
+    rows: list[dict[str, int]],
+    selected_inputs: dict[str, int] | None = None,
+    representation: str = "both",
+    column_labels: dict[str, str] | None = None,
 ) -> None:
     if not rows:
         st.info("No hay filas disponibles para esta tabla.")
         return
+    if representation not in {"both", "boolean", "propositional"}:
+        raise ValueError(f"Representación de tabla desconocida: {representation}")
 
     columns = list(rows[0])
     output_columns = {"F", "Y"}
     header = "".join(
-        f'<th class="{"output-head" if column in output_columns else ""}">{escape(column)}</th>'
+        f'<th class="{"output-head" if column in output_columns else ""}">'
+        f'{escape((column_labels or {}).get(column, column))}</th>'
         for column in columns
     )
     body_rows = []
@@ -339,8 +345,23 @@ def show_truth_table(
         for column in columns:
             value = row[column]
             if value in (0, 1):
+                truth_value = "V" if value else "F"
+                truth_name = "Verdadero" if value else "Falso"
+                if representation == "propositional":
+                    visible_value = truth_value
+                    equivalent = ""
+                elif representation == "both":
+                    visible_value = str(value)
+                    equivalent = (
+                        f'<span class="bit-equivalent" aria-label="{truth_name}">'
+                        f"{truth_value}</span>"
+                    )
+                else:
+                    visible_value = str(value)
+                    equivalent = ""
                 cells.append(
-                    f'<td><span class="bit bit-{value}">{value}</span></td>'
+                    f'<td><span class="bit bit-{value}" title="{value} = {truth_name} ({truth_value})">'
+                    f'<span class="bit-primary">{visible_value}</span>{equivalent}</span></td>'
                 )
             else:
                 cells.append(f"<td>{escape(str(value))}</td>")
@@ -363,7 +384,9 @@ def show_truth_table(
       tr:last-child td {{ border-bottom:0; }}
       tbody tr:nth-child(even) {{ background:rgba(110,151,167,.045); }}
       .bit {{ display:inline-flex; min-width:27px; height:27px; align-items:center;
-        justify-content:center; border-radius:9px; font:700 13px ui-monospace,Consolas,monospace; }}
+        justify-content:center; gap:4px; padding:0 6px; border-radius:9px;
+        font:700 13px ui-monospace,Consolas,monospace; }}
+      .bit-equivalent {{ opacity:.78; font:700 9px ui-sans-serif,system-ui,sans-serif; }}
       .bit-1 {{ color:#83f0d2; background:rgba(54,190,157,.15); box-shadow:inset 0 0 0 1px rgba(89,229,193,.2); }}
       .bit-0 {{ color:#f0c98e; background:rgba(199,148,80,.14); box-shadow:inset 0 0 0 1px rgba(220,176,112,.17); }}
       .active-row {{ background:rgba(53,187,154,.16) !important; }}
@@ -379,8 +402,13 @@ def show_truth_table(
       <tbody>{''.join(body_rows)}</tbody></table></div></div>
     """
     st.html(table_html)
-    if selected_inputs is not None:
-        st.caption("La fila resaltada corresponde a la combinación seleccionada en los controles.")
+    mapping = "V corresponde a 1 y F a 0."
+    active_row = (
+        " La fila resaltada coincide con las entradas seleccionadas."
+        if selected_inputs is not None
+        else ""
+    )
+    st.caption(mapping + active_row)
 
 
 def show_route() -> None:
@@ -446,8 +474,8 @@ def show_route() -> None:
     )
     station = ROUTE_STATIONS[active_index]
     st.markdown(
-        f'<div class="route-focus"><b>IDEA PARA EXPONER</b>'
-        f'<span>{escape(station["cue"])}</span></div>',
+        f'<div class="route-focus"><b>CONCEPTO CLAVE</b>'
+        f'<span>{escape(station["concept"])}</span></div>',
         unsafe_allow_html=True,
     )
 
@@ -487,10 +515,10 @@ def show_gate_slide(gate: str) -> None:
 def show_exercise(exercise_key: str) -> None:
     exercise = EXERCISES[exercise_key]
     context = {
-        "5.11a": "Aquí practicamos cómo reconocer términos redundantes y aplicar combinación y absorción antes de verificar el resultado con una tabla.",
-        "5.11b": "Este ejercicio conecta las Leyes de De Morgan con la distribución: primero abrimos la expresión y después contrastamos sus ocho combinaciones.",
-        "5.12": "Ahora la expresión se implementa usando solo NAND. La transformación conserva la función, aunque cambie la estructura del circuito.",
-        "5.13": "En este caso partimos de un producto de sumas y lo construimos solo con NOR, aprovechando de nuevo De Morgan y la negación doble.",
+        "5.11a": "La expresión contiene términos que se reducen mediante combinación y absorción; la tabla de verdad verifica la equivalencia.",
+        "5.11b": "De Morgan transforma el primer término y la distribución desarrolla el segundo en forma suma de productos, verificable para las ocho combinaciones.",
+        "5.12": "La función se implementa únicamente con compuertas NAND a partir de su forma suma de productos.",
+        "5.13": "El producto de sumas se implementa únicamente con NOR mediante De Morgan y la negación doble.",
     }
     st.markdown(f'<p class="slide-lead">{context[exercise_key]}</p>', unsafe_allow_html=True)
     st.latex(exercise["expression"])
@@ -566,7 +594,7 @@ if slide_kind == "cover":
             <div class="hero-title">Compuertas<br><span>lógicas</span> &amp;<br>Álgebra de Boole</div>
             <p class="hero-sub">De los bits a los circuitos: cómo una computadora toma decisiones con señales binarias.</p>
             <p class="cover-context">En la universidad estudiamos estas reglas porque están detrás de la electrónica digital y de las decisiones que ejecutan los sistemas. Las compuertas procesan señales; el Álgebra de Boole nos ayuda a describirlas, comprobarlas y diseñar circuitos equivalentes.</p>
-            <div class="group-heading"><span class="group-mark">®✓</span><strong>GRUPO ®✓ · Exposición de clase</strong></div>
+            <div class="group-heading"><span class="group-mark">®✓</span><strong>GRUPO ®✓ · Sistemas digitales</strong></div>
           </div>
           <aside class="cover-side">
             {logo_markup}
@@ -592,7 +620,7 @@ if slide_kind == "cover":
         f'<div class="members-grid">{member_cards}</div>',
         unsafe_allow_html=True,
     )
-    st.caption("Usa las flechas o el selector lateral. Los circuitos se pueden explorar durante la exposición.")
+    st.caption("Navegación por flechas o selector lateral; ajusta las entradas para explorar cada circuito.")
 
 elif slide_kind == "index":
     st.markdown(
@@ -608,9 +636,8 @@ elif slide_kind == "definition":
     )
     st.latex(r"\mathrm{Entradas}\ (0\ \mathrm{o}\ 1)\longrightarrow\mathrm{operacion\ logica}\longrightarrow\mathrm{salida}\ (0\ \mathrm{o}\ 1)")
     st.markdown(
-        '<div class="talk-track">En un circuito físico, 0 y 1 representan rangos de voltaje que el sistema interpreta como estados distintos. '
-        'La compuerta no decide al azar: su regla determina la salida para cada combinación de entradas. Por eso podemos anticipar su '
-        'comportamiento con una expresión o una tabla de verdad.</div>',
+        '<div class="concept-panel">En un circuito físico, 0 y 1 representan rangos de voltaje que el sistema interpreta como estados distintos. '
+        'La regla de cada compuerta determina la salida para cada combinación de entradas; una expresión o tabla de verdad permite comprobarla.</div>',
         unsafe_allow_html=True,
     )
     st.markdown("#### Ejemplo: una condición conjunta")
@@ -623,6 +650,26 @@ elif slide_kind == "algebra":
         'Sus operaciones básicas son complemento, producto y suma.</p>',
         unsafe_allow_html=True,
     )
+    st.markdown("#### Valores de verdad y señales digitales")
+    st.markdown(
+        "Una proposición lógica es verdadera o falsa. Al asociar las proposiciones "
+        "p y q con las señales A y B, sus tablas de verdad representan los mismos casos."
+    )
+    st.latex(r"\mathrm{Verdadero}\ (V)\leftrightarrow1,\qquad \mathrm{Falso}\ (F)\leftrightarrow0")
+    st.latex(
+        r"\neg p\leftrightarrow A',\qquad "
+        r"p\land q\leftrightarrow A\cdot B,\qquad "
+        r"p\lor q\leftrightarrow A+B"
+    )
+    st.caption(
+        "Negación = NOT; conjunción (y) = AND; disyunción inclusiva (o) = OR."
+    )
+    with st.expander("Condicional lógico"):
+        st.latex(r"p\to q\equiv\neg p\lor q,\qquad A\to B\equiv A'+B")
+        st.write(
+            "La implicación es falsa únicamente cuando la primera proposición es verdadera y la segunda es falsa."
+        )
+
     operation_notes = {
         "NOT": ("El complemento invierte cada estado binario: convierte el 0 en 1 y el 1 en 0.", r"A'"),
         "AND": ("El producto lógico exige que ambas condiciones se cumplan para que el resultado sea 1.", r"A\cdot B"),
@@ -638,9 +685,28 @@ elif slide_kind == "algebra":
         "AND": lambda a, b: a & b,
         "OR": lambda a, b: a | b,
     }[algebra_gate]
+    representation_label = st.selectbox(
+        "Representación de valores en la tabla",
+        ("Ambas: 1/V y 0/F", "Booleana: 1/0", "Proposicional: V/F"),
+        key="algebra_truth_view",
+    )
+    representation = {
+        "Ambas: 1/V y 0/F": "both",
+        "Booleana: 1/0": "boolean",
+        "Proposicional: V/F": "propositional",
+    }[representation_label]
+    propositional_headers = {
+        "NOT": {"A": "p", "Y": "¬p"},
+        "AND": {"A": "p", "B": "q", "Y": "p ∧ q"},
+        "OR": {"A": "p", "B": "q", "Y": "p ∨ q"},
+    }
     show_truth_table(
         truth_table(tuple(CIRCUITS[algebra_gate]["variables"]), {"Y": fn}),
         values,
+        representation,
+        propositional_headers[algebra_gate]
+        if representation == "propositional"
+        else None,
     )
 
 elif slide_kind in ("NOT", "AND", "OR"):
@@ -656,7 +722,7 @@ elif slide_kind == "derived":
     st.latex(r"A\oplus B=1\ \text{si }A\ne B,\qquad \operatorname{XNOR}(A,B)=1\ \text{si }A=B")
     st.markdown(
         "NAND y NOR se llaman universales porque, combinadas adecuadamente, permiten implementar NOT, AND y OR y, por tanto, "
-        "cualquier función booleana. En los ejercicios siguientes veremos cómo se traduce esa idea a un circuito concreto."
+        "cualquier función booleana. Esta propiedad permite implementar funciones complejas con una sola familia de compuertas."
     )
     gate = st.selectbox("Prueba una compuerta", ("NAND", "NOR", "XOR", "XNOR"), key="derived_gate")
     descriptions = {
@@ -677,7 +743,7 @@ elif slide_kind == "derived":
 
 elif slide_kind == "laws":
     st.markdown(
-        '<p class="slide-lead">Las leyes booleanas son equivalencias: podemos reemplazar una parte de la expresión por otra '
+        '<p class="slide-lead">Las leyes booleanas son equivalencias: cada término puede sustituirse por una forma equivalente '
         'sin cambiar el resultado para ninguna combinación de entradas.</p>',
         unsafe_allow_html=True,
     )
@@ -696,15 +762,22 @@ elif slide_kind == "laws":
     )
     de_morgan_left, de_morgan_right = st.columns(2)
     with de_morgan_left:
+        st.markdown("**Negación de una conjunción**")
         st.latex(r"(A\cdot B)'=A'+B'")
-        st.markdown("La negación de un producto se convierte en una suma de complementos. En hardware, una salida NAND puede interpretarse como una OR de entradas negadas.")
+        st.latex(r"\neg(p\land q)\equiv\neg p\lor\neg q")
+        st.markdown(
+            "La negación de AND equivale a una OR de complementos; NAND integra la conjunción y su negación."
+        )
     with de_morgan_right:
+        st.markdown("**Negación de una disyunción**")
         st.latex(r"(A+B)'=A'\cdot B'")
-        st.markdown("La negación de una suma se convierte en un producto de complementos. Una NOR entrega 1 solo cuando todas sus entradas originales valen 0.")
+        st.latex(r"\neg(p\lor q)\equiv\neg p\land\neg q")
+        st.markdown(
+            "La negación de OR equivale a una AND de complementos; NOR integra la disyunción y su negación."
+        )
     st.markdown(
-        '<div class="talk-track">Estas equivalencias explican por qué NAND y NOR resultan tan útiles: incorporan una negación en la salida. '
-        'Si reorganizamos la expresión con De Morgan, podemos aprovechar esa negación directamente en lugar de agregar compuertas por separado. '
-        'Esa es la conexión que aplicaremos en los ejercicios 5.12 y 5.13.</div>',
+        '<div class="concept-panel">NAND y NOR incorporan una negación en la salida. Las Leyes de De Morgan permiten reorganizar la expresión '
+        'para aprovechar esa negación y reducir compuertas adicionales, como se muestra en los ejercicios 5.12 y 5.13.</div>',
         unsafe_allow_html=True,
     )
 
@@ -713,17 +786,16 @@ elif slide_kind in ("5.11a", "5.11b", "5.12", "5.13"):
 
 elif slide_kind == "references":
     st.markdown(
-        '<p class="slide-lead">Los materiales del curso ayudan a confirmar la notación y seguir la secuencia de ejercicios indicada por el profesor. '
-        'Puedes añadirlos a <code>libros/</code>; la aplicación funciona aunque todavía no estén disponibles.</p>',
+        '<p class="slide-lead">Los materiales de <code>libros/</code> permiten contrastar la notación y las consignas del curso. '
+        'La aplicación funciona aunque esa carpeta esté vacía.</p>',
         unsafe_allow_html=True,
     )
     st.info(
         "Referencia al ejercicio 5.14: el enunciado no está incluido entre los materiales disponibles en este proyecto. "
-        "Conviene consultarlo en el libro o en la guía del curso antes de resolverlo; así evitamos inventar datos o una expresión distinta."
+        "Su resolución requiere consultar la guía o el libro oficial del curso."
     )
     st.markdown(
-        "Cuando incorpores el archivo original, se podrá revisar aquí junto con el resto de referencias. "
-        "La extracción de texto es una ayuda para localizar el contenido, no sustituye la notación ni las indicaciones del material."
+        "La vista previa permite localizar contenido extraído; la notación y las indicaciones oficiales del material siguen siendo la referencia."
     )
     references = list_references()
     if not references:
@@ -758,7 +830,7 @@ elif slide_kind == "closing":
     )
     takeaway_columns = st.columns(3)
     takeaways = [
-        ("Señales", "Cada compuerta aplica una regla a entradas binarias y produce una salida que podemos anticipar."),
+        ("Señales", "La salida queda determinada por los valores de entrada y la función de la compuerta."),
         ("Equivalencia", "La expresión, la tabla y el circuito representan la misma función; simplificar no debe alterar ninguna fila."),
         ("Implementación", "Las leyes, especialmente De Morgan, permiten convertir funciones a redes de compuertas NAND o NOR."),
     ]
@@ -770,9 +842,8 @@ elif slide_kind == "closing":
             )
     st.markdown("")
     st.markdown(
-        '<div class="talk-track">Para cerrar, podemos pensar en tres formas de mirar el mismo problema: la expresión explica '
-        'la regla, la tabla verifica todas las entradas posibles y el circuito muestra cómo realizarla físicamente. '
-        'Cuando esas tres representaciones coinciden, tenemos una implementación correcta.</div>',
+        '<div class="concept-panel">Una función se describe mediante su expresión booleana, su tabla de verdad y su circuito. '
+        'La equivalencia entre estas representaciones verifica que el circuito implementa la función deseada.</div>',
         unsafe_allow_html=True,
     )
     st.caption("GRUPO ®✓ · Compuertas lógicas y Álgebra de Boole")

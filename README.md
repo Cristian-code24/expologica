@@ -1,6 +1,6 @@
 # Compuertas lógicas y Álgebra de Boole
 
-Presentación web en Python y Streamlit para exponer los fundamentos, las compuertas y los ejercicios 5.11a–5.13. Incluye explicaciones de apoyo para la exposición, fórmulas renderizadas en LaTeX, tablas de verdad con resaltado de la combinación seleccionada y circuitos Canvas que transportan paquetes animados con el valor actual de cada señal.
+Presentación web en Python y Streamlit sobre compuertas y Álgebra de Boole. Incluye fórmulas renderizadas en LaTeX, tablas de verdad con resaltado de la combinación seleccionada y circuitos Canvas con señales animadas.
 
 ## Ejecutar localmente
 
