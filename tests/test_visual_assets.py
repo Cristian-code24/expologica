@@ -25,6 +25,17 @@ class VisualAssetTests(unittest.TestCase):
             self.assertIsNone(find_visual_asset("campus", Path(temporary_directory)))
             self.assertIsNone(image_data_uri(None))
 
+    def test_prefers_named_boole_portrait_over_illustration(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            portrait = root / "fotos" / "retrato de boole.jpeg"
+            illustration = root / "fotos" / "boole estiloanime.jpg"
+            for path in (portrait, illustration):
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b"image")
+
+            self.assertEqual(find_visual_asset("boole_guide", root), portrait)
+
     def test_image_data_uri_uses_local_file_contents(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
             image = Path(temporary_directory) / "logo.png"

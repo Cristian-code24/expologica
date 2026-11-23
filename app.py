@@ -159,7 +159,7 @@ st.markdown(
       transition:transform .18s ease,border-color .18s ease,filter .18s ease; }
     .stButton > button:hover { transform:translateY(-2px); border-color:#70e8cf; filter:brightness(1.12); }
     [data-testid="stProgressBar"] > div > div > div > div { background:linear-gradient(90deg,#35d9bd,#8d7cff,#ffb36b); }
-    .cover-hero { position:relative; isolation:isolate; display:grid; grid-template-columns:minmax(0,1fr) 165px;
+    .cover-hero { position:relative; isolation:isolate; display:grid; grid-template-columns:minmax(0,1fr) 220px;
       gap:1rem; min-height:380px; overflow:hidden; padding:clamp(1.5rem,4vw,3rem);
       border:1px solid rgba(196,218,255,.24); border-radius:26px;
       background:linear-gradient(135deg,#10243a,#172044 64%,#271e47); box-shadow:0 24px 70px rgba(0,0,0,.32); }
@@ -182,14 +182,15 @@ st.markdown(
     .logo-fallback { width:130px; height:130px; display:grid; place-items:center; border-radius:25px;
       border:1px solid rgba(255,255,255,.75); color:#fff; font-size:2rem; font-weight:850;
       background:linear-gradient(145deg,#087e9d,#6e5ad8); }
-    .boole-card { display:flex; align-items:center; gap:.75rem; width:min(100%,290px); padding:.65rem;
+    .boole-card { display:flex; align-items:center; gap:.75rem; width:min(100%,320px); padding:.75rem;
       border:1px solid rgba(219,232,255,.26); border-radius:18px; background:rgba(8,18,33,.76);
       color:#edf5ff; backdrop-filter:blur(8px); box-shadow:0 12px 30px rgba(0,0,0,.2); }
-    .boole-portrait { width:64px; height:64px; object-fit:cover; border-radius:13px; border:1px solid rgba(255,255,255,.35); }
-    .boole-placeholder { width:64px; height:64px; display:grid; place-items:center; border-radius:13px;
+    .boole-portrait { width:88px; height:88px; flex:0 0 88px; object-fit:cover; object-position:32% center;
+      border-radius:13px; border:1px solid rgba(255,255,255,.5); }
+    .boole-placeholder { width:88px; height:88px; flex:0 0 88px; display:grid; place-items:center; border-radius:13px;
       background:linear-gradient(145deg,#183d59,#463574); font-size:1.55rem; }
     .boole-card strong { display:block; color:#87ead4; font-size:.92rem; }
-    .boole-card span { color:#bdccdc; font-size:.78rem; }
+    .boole-card span { display:block; color:#bdccdc; font-size:.78rem; line-height:1.4; }
     .group-heading { display:flex; align-items:center; gap:.75rem; margin:1.3rem 0 .35rem; }
     .group-mark { display:inline-grid; place-items:center; width:36px; height:36px; border-radius:12px;
       color:#07161f; font-weight:900; background:linear-gradient(135deg,#6be8ca,#7dbaff); }
@@ -580,7 +581,7 @@ if slide_kind == "cover":
         else '<div class="logo-fallback" aria-label="Escuela de Estadística e Informática">EI</div>'
     )
     boole_markup = (
-        f'<img class="boole-portrait" src="{boole_uri}" alt="Retrato ilustrado de George Boole">'
+        f'<img class="boole-portrait" src="{boole_uri}" alt="Retrato de George Boole">'
         if boole_uri
         else '<div class="boole-placeholder" aria-hidden="true">⌘</div>'
     )

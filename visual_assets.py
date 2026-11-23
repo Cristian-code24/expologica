@@ -26,7 +26,7 @@ _ASSET_RULES = {
         "contains": ("logoestadistica", "logoinformatica", "logoescuela", "logocarrera", "logo"),
     },
     "boole_guide": {
-        "exact": ("booleestiloanime", "retratodeboole", "georgeboole", "boole"),
+        "exact": ("retratodeboole", "georgeboole", "boole", "booleestiloanime"),
         "contains": ("boole", "boolean", "retrato"),
     },
 }
