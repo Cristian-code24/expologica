@@ -791,6 +791,26 @@ elif slide_kind == "references":
         'La aplicación funciona aunque esa carpeta esté vacía.</p>',
         unsafe_allow_html=True,
     )
+    st.markdown("#### Fuente bibliográfica del contenido")
+    st.markdown(
+        "El material del curso identifica como fuente *Matemática discreta y sus aplicaciones*, "
+        "capítulo 10, «Álgebra de Boole»."
+    )
+    st.markdown(
+        "**Referencia APA 7 (provisional):**  \n"
+        "[revisar dato en archivo]. ([revisar dato en archivo]). "
+        "*Matemática discreta y sus aplicaciones* "
+        "(cap. 10, «Álgebra de Boole», pp. [revisar dato en archivo]). "
+        "[revisar dato en archivo]."
+    )
+    st.caption(
+        "El fragmento disponible no confirma autor, año, edición, editorial ni paginación completa. "
+        "Completa esos datos desde la portada o la página legal del libro."
+    )
+    st.info(
+        "Los libros y materiales completos del curso permanecen locales y no se publican en el repositorio. "
+        "Añade copias autorizadas a libros/ para verlas aquí; la app solo comparte la referencia bibliográfica."
+    )
     st.info(
         "Referencia al ejercicio 5.14: el enunciado no está incluido entre los materiales disponibles en este proyecto. "
         "Su resolución requiere consultar la guía o el libro oficial del curso."
